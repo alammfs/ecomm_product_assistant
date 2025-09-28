@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Standalone EKS Cluster with NodeGroup and ECR Repository
+Description: Standalone EKS Cluster alam with NodeGroup and ECR Repository
 
 Parameters:
   ClusterName:
