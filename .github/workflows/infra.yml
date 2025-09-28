@@ -1,4 +1,4 @@
-name: Provision Infra (EKS + ECR)
+name: Provision eks Infra (EKS + ECR)
 
 on:
   workflow_dispatch:   # manual trigger only
