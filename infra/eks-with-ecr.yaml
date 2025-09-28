@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Standalone EKS alam Cluster with NodeGroup and ECR Repository
+Description: Standalone EKS Cluster with NodeGroup and ECR Repository
 
 Parameters:
   ClusterName:
     Type: String
-    Default: product-assistant-cluster
+    Default: product-assistant-cluster-latest
   NodeInstanceType:
     Type: String
     Default: t3.medium
