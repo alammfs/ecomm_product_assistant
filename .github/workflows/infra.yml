@@ -1,6 +1,7 @@
 name: Provision eks Infra (EKS + ECR)
 
-on: [push, pull_request]
+on:
+  workflow_dispatch:   # manual trigger only
 
 jobs:
   provision:
