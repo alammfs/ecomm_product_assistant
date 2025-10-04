@@ -32,6 +32,8 @@ async def main():
         print("\n No local results, falling back to web search...\n")
         web_result = await web_tool.ainvoke({"query": query})
         print("Web Search Result:\n", web_result)
+        
+    await client.close()
 
 if __name__ == "__main__":
     asyncio.run(main())

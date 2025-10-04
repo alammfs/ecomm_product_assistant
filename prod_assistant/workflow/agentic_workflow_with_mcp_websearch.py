@@ -21,7 +21,7 @@ class AgenticRAG:
         messages: Annotated[Sequence[BaseMessage], add_messages]
 
     def __init__(self):
-        self.retriever_obj = Retriever()
+        # self.retriever_obj = Retriever()
         self.model_loader = ModelLoader()
         self.llm = self.model_loader.load_llm()
         self.checkpointer = MemorySaver()

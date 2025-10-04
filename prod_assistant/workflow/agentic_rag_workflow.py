@@ -14,7 +14,25 @@ from evaluation.ragas_eval import evaluate_context_precision, evaluate_response_
 
 
 class AgenticRAG:
-    """Agentic RAG pipeline using LangGraph."""
+    """Agentic RAG pipeline using LangGraph.
+    
+    about Class AgentState(TypedDict)
+    This defines the state schema for your agentic workflow — i.e., 
+    what information (state variables) the agent passes between nodes in the LangGraph.
+TypedDict is a type hint (from Python’s typing module) — used here to declare that the 
+agent’s state is a dictionary with a specific structure.
+It says: the state will have one key named "messages", whose value is a list of LangChain BaseMessage objects 
+(e.g. HumanMessage, AIMessage, etc.).
+The Annotated type adds metadata about how the field behaves during the graph run.
+
+add_messages
+add_messages is a LangGraph reducer function (similar to how Redux reducers work).
+It tells LangGraph how to merge or append new messages when a node outputs messages.
+So, when your workflow adds a new message (say, from the LLM or retriever), 
+add_messages makes sure the message is appended to the state’s "messages" list, not overwritten.
+So in short:
+This defines a state structure where each node in the graph can append messages to the conversation history. 
+    """
 
     class AgentState(TypedDict):
         messages: Annotated[Sequence[BaseMessage], add_messages]
@@ -25,6 +43,24 @@ class AgenticRAG:
         self.llm = self.model_loader.load_llm()
         self.checkpointer = MemorySaver()
         self.workflow = self._build_workflow()
+        """
+        about workflow.compile
+        workflow is your StateGraph (the set of nodes and edges describing your agentic logic).
+        .compile() converts the graph definition into an executable LangGraph app.
+        The checkpointer you pass (e.g., MemorySaver(), Redis, Postgres, etc.) determines where 
+        intermediate states and memory are stored.
+        the checkpointer is how LangGraph implements persistent state and memory across runs (invocations)
+        LangGraph serializes the current state (e.g., the AgentState dict).
+        It saves state in the checkpointer storage (RAM, DB, Redis, etc.).
+        Later, when you call invoke() again with the same thread_id, 
+        it restores that previous state (conversation history, retrieved docs, etc.).
+        The in-memory checkpointer resets when process restarts.
+        But you can also use persistent ones like Redis/Postgres for long-term memory.
+        Analogy
+        ===
+        Think of .compile(checkpointer=...) as:
+        “Freeze my workflow graph into an executable app, and attach a database where each run can store and resume its memory.”
+        """
         self.app = self.workflow.compile(checkpointer=self.checkpointer)
 
     # ---------- Helpers ----------

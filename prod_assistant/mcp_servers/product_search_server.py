@@ -30,6 +30,8 @@ def format_docs(docs) -> str:
     return "\n\n---\n\n".join(formatted_chunks)
 
 # ---------- MCP Tools ----------
+# Registers the async function as an exposed MCP tool.
+# These are discoverable by the client via list_tools()
 @mcp.tool()
 async def get_product_info(query: str) -> str:
     """Retrieve product information for a given query from local retriever."""
@@ -41,7 +43,8 @@ async def get_product_info(query: str) -> str:
         return context
     except Exception as e:
         return f"Error retrieving product info: {str(e)}"
-
+# Registers the async function as an exposed MCP tool.
+# These are discoverable by the client via list_tools()
 @mcp.tool()
 async def web_search(query: str) -> str:
     """Search the web using DuckDuckGo if retriever has no results."""

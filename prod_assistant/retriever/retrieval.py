@@ -39,6 +39,14 @@ class Retriever:
     
     def load_retriever(self):
         """_summary_
+        Normally, similarity search gives you very similar documents, which can often be redundant
+        (e.g., multiple chunks of the same paragraph).
+
+        MMR solves this by:
+        Picking results that are relevant to the query and
+        Diverse enough (not too close to each other).
+        So your retriever won’t give the LLM 5 near-identical passages — it’ll 
+        give varied but still relevant content.
         """
         if not self.vstore:
             collection_name = self.config["astra_db"]["collection_name"]
@@ -53,6 +61,12 @@ class Retriever:
         if not self.retriever_instance:
             top_k = self.config["retriever"]["top_k"] if "retriever" in self.config else 3
             
+            # Normally, similarity search gives you very similar documents, which can often be redundant
+            # (e.g., multiple chunks of the same paragraph).
+            # MMR solves this
+            # Picking results that are relevant to the query and
+            # Diverse enough (not too close to each other).
+            # So your retriever won’t give the LLM 5 near-identical passages — it’ll give varied but still relevant content.
             mmr_retriever=self.vstore.as_retriever(
                 search_type="mmr",
                 search_kwargs={"k": top_k,
@@ -81,7 +95,7 @@ class Retriever:
         return output
     
 if __name__=='__main__':
-    user_query = "Can you suggest good budget iPhone under 1,00,00 INR?"
+    user_query = "Can you suggest good budget iPhone under 1,00,000 INR?"
     
     retriever_obj = Retriever()
     
@@ -92,7 +106,9 @@ if __name__=='__main__':
             return "No relevant documents found."
         formatted_chunks = []
         for d in docs:
-            meta = d.metadata or {}
+            meta = getattr(d, "metadata", None)
+            if not isinstance(meta, dict):
+                continue
             formatted = (
                 f"Title: {meta.get('product_title', 'N/A')}\n"
                 f"Price: {meta.get('price', 'N/A')}\n"
@@ -105,7 +121,7 @@ if __name__=='__main__':
     retrieved_contexts = [_format_docs(doc) for doc in retrieved_docs]
     
     #this is not an actual output this have been written to test the pipeline
-    response="iphone 16 plus, iphone 16, iphone 15 are best phones under 1,00,000 INR."
+    response="iphone 17 are best phones under 1,00,000 INR."
     
     context_score = evaluate_context_precision(user_query,response,retrieved_contexts)
     relevancy_score = evaluate_response_relevancy(user_query,response,retrieved_contexts)

@@ -18,7 +18,9 @@ def format_docs(docs) -> str:
 
     formatted_chunks = []
     for d in docs:
-        meta = d.metadata or {}
+        meta = getattr(d, "metadata", None)
+        if not isinstance(meta, dict):
+            continue
         formatted = (
             f"Title: {meta.get('product_title', 'N/A')}\n"
             f"Price: {meta.get('price', 'N/A')}\n"
@@ -31,7 +33,24 @@ def format_docs(docs) -> str:
 
 
 def build_chain(query):
-    """Build the RAG pipeline chain with retriever, prompt, LLM, and parser."""
+    """Build the RAG pipeline chain with retriever, prompt, LLM, and parser.
+    composing a LangChain Runnable pipeline using the | operator.
+    {"context": retriever | format_docs, "question": RunnablePassthrough()}
+    This is a RunnableParallel-like mapping:
+    "context" → runs the retriever first, then pipes the results into format_docs (so you fetch relevant documents and turn them into text).
+    "question" → RunnablePassthrough() just passes the user’s raw input along unchanged.
+    final result is a dict like
+    {
+    "context": "Formatted retrieved docs...",
+    "question": "What is the price of product X?"
+    }
+    | prompt - Fills your prompt template with context and question. e.g
+    You are a helpful product assistant.
+    CONTEXT: Formatted retrieved docs...
+    QUESTION: What is the price of product X?
+    | llm Sends the filled prompt to the loaded LLM for generation.
+    | StrOutputParser() Converts the LLM’s structured response (could be AIMessage) into a plain Python string.
+    """
     retriever = retriever_obj.load_retriever()
     retrieved_docs=retriever.invoke(query)
     
