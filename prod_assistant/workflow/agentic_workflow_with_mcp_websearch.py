@@ -30,7 +30,7 @@ class AgenticRAG:
         self.mcp_client = MultiServerMCPClient(
             {
                 "hybrid_search": {
-                    "transport": "streamable_http",
+                    "transport": "streamable-http",
                     "url": "http://localhost:8000/mcp"
                 }
             }
